@@ -262,7 +262,30 @@ namespace Sifravimas_V4._1
             string[] stringList = fullString.Split(" // ");
             string passwordSnippet = stringList[1];
             Clipboard.SetText(passwordSnippet);
+        }
 
+        private void SearchButton_Click(object sender, EventArgs e)
+        {
+            int counter = 0;
+            string line;
+
+            // Read the file and display it line by line.  
+            using System.IO.StreamReader file =
+                new System.IO.StreamReader(path + "passwords.txt");
+            while ((line = file.ReadLine()) != null)
+            {
+                string[] tempList = line.Split("<>");
+                string name = tempList[0];
+                string password = tempList[1];
+                string url = tempList[2];
+                string comment = tempList[3];
+                string passwordOutput;
+                if(SearchTextBox.Text == name)
+                {
+                    SearchResultLabel.Text = line;
+                }
+                counter++;
+            }
         }
     }
 }
