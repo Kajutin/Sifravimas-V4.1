@@ -14,21 +14,29 @@ namespace Sifravimas_V4._1
 {
     public partial class Form1 : Form
     {
-
+        #region Kintamieji
         string path = "C:\\Users\\kajus\\Desktop\\testSaugumas\\";
         string globalName;
         string globalPassword;
         string globalLine;
         bool shouldIRun = false;
+        #endregion Kintamieji
         public Form1()
         {
             InitializeComponent();
             var login = new Login();
+            //
+            // PRISIJUNGIMO FORMA
+            // jeigu teisingai suveda duomenis tai atsifruojamas failas
+            //
             if(login.ShowDialog() == DialogResult.OK)
             {
                 shouldIRun = true;
                 
 
+                //
+                // SUKURIAMAS FAILAS ir ATSIFRUOJAMAS JEI YRA JAU
+                //
                 if (File.Exists(path + "passwords.txt.aes"))
                 {
                     FileDecrypt(path + "passwords.txt.aes", "test");
@@ -36,7 +44,7 @@ namespace Sifravimas_V4._1
                 }
                 else if (File.Exists(path + "passwords.txt"))
                 {
-                    //woops
+                    //woops, cia jeigu neteisingai programa buvo crashinta ar kas ir liko netycia neuzsifruotas failas
                 }
                 else
                 { 
@@ -45,6 +53,10 @@ namespace Sifravimas_V4._1
                 FillListViewFromFile();
             }
         }
+
+        //
+        // UZSIFRAVIMAS UZDARANT PROGRAMA
+        //
         protected override void OnFormClosing(FormClosingEventArgs e)
         { 
             if(shouldIRun == true)
@@ -54,52 +66,35 @@ namespace Sifravimas_V4._1
                 base.OnFormClosing(e);
             }    
         }
+        
+        //
+        // FAILO SIFRAVIMO KODAS
+        //
         private void FileEncrypt(string inputFile, string password)
         {
-            //http://stackoverflow.com/questions/27645527/aes-encryption-on-large-files
-
-            //generate random salt
             byte[] salt = GenerateRandomSalt();
-
-            //create output file name
             using FileStream fsCrypt = new FileStream(inputFile + ".aes", FileMode.Create);
-            //convert password string to byte arrray
             byte[] passwordBytes = System.Text.Encoding.UTF8.GetBytes(password);
-
-            //Set Rijndael symmetric encryption algorithm
             RijndaelManaged AES = new RijndaelManaged();
             AES.KeySize = 256;
             AES.BlockSize = 128;
             AES.Padding = PaddingMode.PKCS7;
-
-            //http://stackoverflow.com/questions/2659214/why-do-i-need-to-use-the-rfc2898derivebytes-class-in-net-instead-of-directly
-            //"What it does is repeatedly hash the user password along with the salt." High iteration counts.
             var key = new Rfc2898DeriveBytes(passwordBytes, salt, 50000);
             AES.Key = key.GetBytes(AES.KeySize / 8);
             AES.IV = key.GetBytes(AES.BlockSize / 8);
-
-            //Cipher modes: http://security.stackexchange.com/questions/52665/which-is-the-best-cipher-mode-and-padding-mode-for-aes-encryption
             AES.Mode = CipherMode.CBC;
-
-            // write salt to the begining of the output file, so in this case can be random every time
             fsCrypt.Write(salt, 0, salt.Length);
-
             using CryptoStream cs = new CryptoStream(fsCrypt, AES.CreateEncryptor(), CryptoStreamMode.Write);
-
             using FileStream fsIn = new FileStream(inputFile, FileMode.Open);
-
-            //create a buffer (1mb) so only this amount will allocate in the memory and not the whole file
             byte[] buffer = new byte[1048576];
             int read;
-
             try
             {
                 while ((read = fsIn.Read(buffer, 0, buffer.Length)) > 0)
                 {
-                    Application.DoEvents(); // -> for responsive GUI, using Task will be better!
+                    Application.DoEvents(); 
                     cs.Write(buffer, 0, read);
                 }
-                // Close up
                 fsIn.Close();
 
             }
@@ -107,27 +102,17 @@ namespace Sifravimas_V4._1
             {
                 Console.WriteLine("Error: " + ex.Message);
             }
-            //finally
-            //{
-            //    cs.Close();
-            //    fsCrypt.Close();
-            //    using (var md5 = MD5.Create())
-            //    {
-            //        using (var stream = File.OpenRead(inputFile + ".aes"))
-            //        {
-            //            hashDictionary.Add(Convert.ToBase64String(md5.ComputeHash(stream)), inputFile + ".aes");
-            //        }
-            //    }
-            //}
         }
+
+        //
+        // FAILO ATSIFRAVIMO KODAS
+        //
         private void FileDecrypt(string inputFile, string password)
         {
             byte[] passwordBytes = System.Text.Encoding.UTF8.GetBytes(password);
             byte[] salt = new byte[32];
-
             FileStream fsCrypt = new FileStream(inputFile, FileMode.Open);
             fsCrypt.Read(salt, 0, salt.Length);
-
             RijndaelManaged AES = new RijndaelManaged();
             AES.KeySize = 256;
             AES.BlockSize = 128;
@@ -137,11 +122,8 @@ namespace Sifravimas_V4._1
             AES.Padding = PaddingMode.PKCS7;
             AES.Mode = CipherMode.CBC;
             string outputFile = inputFile.Substring(0, inputFile.Length - 4);
-
             CryptoStream cs = new CryptoStream(fsCrypt, AES.CreateDecryptor(), CryptoStreamMode.Read);
-
             FileStream fsOut = new FileStream(outputFile, FileMode.Create);
-
             int read;
             byte[] buffer = new byte[1048576];
 
@@ -176,6 +158,10 @@ namespace Sifravimas_V4._1
                 fsCrypt.Close();
             }
         }
+
+        //
+        // DRUSKA KAD SKANIAU
+        //
         public static byte[] GenerateRandomSalt()
         {
             byte[] data = new byte[32];
@@ -192,6 +178,9 @@ namespace Sifravimas_V4._1
             return data;
         }
 
+        //
+        // SLAPTAZODZIU SARASO PILDYMAS IS FAILO
+        //
         public void FillListViewFromFile()
         {
             PasswordsListView.Clear();
@@ -200,17 +189,26 @@ namespace Sifravimas_V4._1
                 int counter = 0;
                 string line;
 
-                // Read the file and display it line by line.  
+
                 using System.IO.StreamReader file =
                     new System.IO.StreamReader(path + "passwords.txt");
                 while ((line = file.ReadLine()) != null)
                 {
+                    //
+                    // EILUCIU NUSKAITYMAS
+                    // eilute nuskaitoma ir isskaidoma i kelis punktus
+                    //
                     string[] tempList = line.Split("<>");
                     string name = tempList[0];
                     string password = tempList[1];
                     string url = tempList[2];
                     string comment = tempList[3];
                     string passwordOutput;
+
+                    //
+                    // ATSIFRAVIMAS SLAPTAZODZIO
+                    // kadangi is failo gauname AES uzsifruota slaptazodi tai ji rodant reikia atsifruoti
+                    //
                     byte[] KeyAES = Encoding.UTF8.GetBytes("testtesttesttest");
                     passwordOutput = Decode(password, KeyAES);
                     PasswordsListView.Items.Add(name + " // " + passwordOutput + " // " + url + " // " + comment);
@@ -219,6 +217,10 @@ namespace Sifravimas_V4._1
             }
             
         }
+
+        //
+        // NAUJO SLAPTAZODZIO KURIMAS
+        //
         private void SaveButton_Click(object sender, EventArgs e)
         {
             int found = 0;
@@ -227,12 +229,14 @@ namespace Sifravimas_V4._1
             string URL = URLTextBox.Text;
             string Comment = CommentTextBox.Text;
             string PasswordEncrypted;
+            
+            //
+            // PATIKRA AR TOKS JAU VARDAS EGZISTUOJA
+            //
             if (new FileInfo(path + "passwords.txt").Length != 0)
             {
                 int counter = 0;
                 string line;
-
-                // Read the file and display it line by line.  
                 using System.IO.StreamReader file =
                     new System.IO.StreamReader(path + "passwords.txt");
                 while ((line = file.ReadLine()) != null)
@@ -249,6 +253,9 @@ namespace Sifravimas_V4._1
             }
             if(found == 0)
             {
+                //
+                // IVESTAS SLAPTAZODIS UZKODUOJAMAS ir IRASOMAS I FAILA
+                //
                 byte[] KeyAES = Encoding.UTF8.GetBytes("testtesttesttest");
                 string encrypted = Encode(Password, KeyAES);
                 string Final = Name + "<>" + encrypted + "<>" + URL + "<>" + Comment + "\n";
@@ -261,27 +268,28 @@ namespace Sifravimas_V4._1
             }
 
         }
+
+        //
+        // KODAVIMAS STRINGO
+        //
         private string Encode(string text, byte[] key)
         {
-            // Nesifruotas tekstaspaverciamas i baitus
             byte[] Text = Encoding.UTF8.GetBytes(text);
             RijndaelManaged aes = new RijndaelManaged();
-            // Modas ecb
             aes.Mode = CipherMode.ECB;
             aes.Padding = PaddingMode.PKCS7;
             aes.KeySize = 128;
-
-            // Sukuria sifratoriu
             using (ICryptoTransform encryptor = aes.CreateEncryptor(key, null))
             {
-                // Sifruojam teksta
                 byte[] encryptedText = encryptor.TransformFinalBlock(Text, 0, Text.Length);
-                // Nutraukiam darba
                 encryptor.Dispose();
-                // Grazinam sifruota teksta string formatu
                 return Convert.ToBase64String(encryptedText);
             }
         }
+
+        //
+        // ATKODAVIMAS STRINGO
+        //
         private string Decode(string text, byte[] key)
         {
             byte[] encodedText = Convert.FromBase64String(text);
@@ -297,6 +305,10 @@ namespace Sifravimas_V4._1
             }
         }
 
+        //
+        // PASIRINKTO SLAPTAZODZIO IRASYMAS I CLIPBOARD
+        // tiesiog nukopijuoja slaptazodzio vieta isardzius visa linija is listview
+        //
         private void CopyButton_Click(object sender, EventArgs e)
         {
             string fullString = PasswordsListView.SelectedItems[0].Text;
@@ -305,29 +317,44 @@ namespace Sifravimas_V4._1
             Clipboard.SetText(passwordSnippet);
         }
 
+        //
+        // PAIESKA
+        //
         private void SearchButton_Click(object sender, EventArgs e)
         {
             int counter = 0;
             string line;
 
-            // Read the file and display it line by line.  
             using System.IO.StreamReader file =
                 new System.IO.StreamReader(path + "passwords.txt");
             while ((line = file.ReadLine()) != null)
             {
                 string[] tempList = line.Split("<>");
-                globalName = tempList[0];
-                globalPassword = tempList[1];
-                globalLine = line;
+                string tempGlobalName = tempList[0];
+                string tempGlobalPassword = tempList[1];
+                string tempGlobalLine = line;
                 string url = tempList[2];
                 string comment = tempList[3];
-                if(SearchTextBox.Text == globalName)
+                //
+                // KAI RANDA TAI ISVEDA TA EILUTE
+                //
+                if(SearchTextBox.Text == tempGlobalName)
                 {
+                    globalName = tempList[0];
+                    globalPassword = tempList[1];
+                    globalLine = line;
+                    EncryptedPasswordLabel.Text = globalPassword;
                     SearchResultLabel.Text = line;
+                    RevealPasswordLabel.Text = "[password goes here]";
                 }
                 counter++;
             }
         }
+
+        //
+        // SLAPTAZODZIO PAKEITIMAS
+        // iraso ir i faila ir uzkoduoja dar tuo paciu
+        //
         private void ChangePasswordButton_Click(object sender, EventArgs e)
         {
             byte[] KeyAES = Encoding.UTF8.GetBytes("testtesttesttest");
@@ -336,6 +363,10 @@ namespace Sifravimas_V4._1
             FillListViewFromFile();
         }
 
+        //
+        // SLAPTAZODZIO TRINIMAS
+        // istrina ir is lenteles ir is failo
+        //
         private void DeleteButton_Click(object sender, EventArgs e)
         {
             File.WriteAllText(path + "passwords.txt", File.ReadAllText(path + "passwords.txt").Replace(globalLine + "\n", ""));
@@ -343,16 +374,27 @@ namespace Sifravimas_V4._1
             SearchResultLabel.Text = "Password was deleted.";
         }
 
+        //
+        // ATKODUOJA SLAPTAZODI
+        // zinau, kad matosi slaptazodis virsuje listviewe, bet cia is globalaus
+        // kintamojo paduoto uzkoduoto perduoda ir atkoduoja slaptazodi
+        //
         private void RevealPasswordButton_Click(object sender, EventArgs e)
         {
             byte[] KeyAES = Encoding.UTF8.GetBytes("testtesttesttest");
             RevealPasswordLabel.Text = Decode(globalPassword, KeyAES);
         }
 
+        //
+        // SUGENERUOJA RANDOM SLAPTAZODI
+        //
         private void RandomPasswordButton_Click(object sender, EventArgs e)
         {
             Guid g = Guid.NewGuid();
             string GuidString = Convert.ToBase64String(g.ToByteArray());
+            //
+            // PATVARKO SLAPTAZODI
+            //
             GuidString = GuidString.Replace("=", "");
             GuidString = GuidString.Replace("+", "");
             GuidString = GuidString.Replace("/", "");

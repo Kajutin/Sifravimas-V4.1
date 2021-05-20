@@ -53,6 +53,9 @@ namespace Sifravimas_V4._1
             this.RevealPasswordLabel = new System.Windows.Forms.Label();
             this.RevealPasswordButton = new System.Windows.Forms.Button();
             this.RandomPasswordButton = new System.Windows.Forms.Button();
+            this.EncryptedPasswordLabel = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
+            this.label9 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // PasswordsListView
@@ -239,7 +242,7 @@ namespace Sifravimas_V4._1
             // RevealPasswordLabel
             // 
             this.RevealPasswordLabel.AutoSize = true;
-            this.RevealPasswordLabel.Location = new System.Drawing.Point(274, 349);
+            this.RevealPasswordLabel.Location = new System.Drawing.Point(349, 357);
             this.RevealPasswordLabel.Name = "RevealPasswordLabel";
             this.RevealPasswordLabel.Size = new System.Drawing.Size(119, 15);
             this.RevealPasswordLabel.TabIndex = 20;
@@ -247,7 +250,7 @@ namespace Sifravimas_V4._1
             // 
             // RevealPasswordButton
             // 
-            this.RevealPasswordButton.Location = new System.Drawing.Point(274, 323);
+            this.RevealPasswordButton.Location = new System.Drawing.Point(349, 382);
             this.RevealPasswordButton.Name = "RevealPasswordButton";
             this.RevealPasswordButton.Size = new System.Drawing.Size(109, 23);
             this.RevealPasswordButton.TabIndex = 21;
@@ -265,11 +268,41 @@ namespace Sifravimas_V4._1
             this.RandomPasswordButton.UseVisualStyleBackColor = true;
             this.RandomPasswordButton.Click += new System.EventHandler(this.RandomPasswordButton_Click);
             // 
+            // EncryptedPasswordLabel
+            // 
+            this.EncryptedPasswordLabel.AutoSize = true;
+            this.EncryptedPasswordLabel.Location = new System.Drawing.Point(349, 327);
+            this.EncryptedPasswordLabel.Name = "EncryptedPasswordLabel";
+            this.EncryptedPasswordLabel.Size = new System.Drawing.Size(175, 15);
+            this.EncryptedPasswordLabel.TabIndex = 23;
+            this.EncryptedPasswordLabel.Text = "[encrypted password goes here]";
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(289, 357);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(64, 15);
+            this.label8.TabIndex = 24;
+            this.label8.Text = "Decrypted:";
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(289, 327);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(63, 15);
+            this.label9.TabIndex = 25;
+            this.label9.Text = "Encrypted:";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(802, 411);
+            this.Controls.Add(this.label9);
+            this.Controls.Add(this.label8);
+            this.Controls.Add(this.EncryptedPasswordLabel);
             this.Controls.Add(this.RandomPasswordButton);
             this.Controls.Add(this.RevealPasswordButton);
             this.Controls.Add(this.RevealPasswordLabel);
@@ -327,6 +360,9 @@ namespace Sifravimas_V4._1
         private System.Windows.Forms.Label RevealPasswordLabel;
         private System.Windows.Forms.Button RevealPasswordButton;
         private System.Windows.Forms.Button RandomPasswordButton;
+        private System.Windows.Forms.Label EncryptedPasswordLabel;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.Label label9;
     }
 }
 
