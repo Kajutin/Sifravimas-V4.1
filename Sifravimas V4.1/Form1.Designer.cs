@@ -52,6 +52,7 @@ namespace Sifravimas_V4._1
             this.SearchResultLabel = new System.Windows.Forms.Label();
             this.RevealPasswordLabel = new System.Windows.Forms.Label();
             this.RevealPasswordButton = new System.Windows.Forms.Button();
+            this.RandomPasswordButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // PasswordsListView
@@ -75,7 +76,7 @@ namespace Sifravimas_V4._1
             // 
             this.PasswordTextBox.Location = new System.Drawing.Point(608, 59);
             this.PasswordTextBox.Name = "PasswordTextBox";
-            this.PasswordTextBox.Size = new System.Drawing.Size(185, 23);
+            this.PasswordTextBox.Size = new System.Drawing.Size(114, 23);
             this.PasswordTextBox.TabIndex = 2;
             // 
             // URLTextBox
@@ -254,11 +255,22 @@ namespace Sifravimas_V4._1
             this.RevealPasswordButton.UseVisualStyleBackColor = true;
             this.RevealPasswordButton.Click += new System.EventHandler(this.RevealPasswordButton_Click);
             // 
+            // RandomPasswordButton
+            // 
+            this.RandomPasswordButton.Location = new System.Drawing.Point(728, 58);
+            this.RandomPasswordButton.Name = "RandomPasswordButton";
+            this.RandomPasswordButton.Size = new System.Drawing.Size(65, 23);
+            this.RandomPasswordButton.TabIndex = 22;
+            this.RandomPasswordButton.Text = "Random";
+            this.RandomPasswordButton.UseVisualStyleBackColor = true;
+            this.RandomPasswordButton.Click += new System.EventHandler(this.RandomPasswordButton_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(802, 411);
+            this.Controls.Add(this.RandomPasswordButton);
             this.Controls.Add(this.RevealPasswordButton);
             this.Controls.Add(this.RevealPasswordLabel);
             this.Controls.Add(this.SearchResultLabel);
@@ -314,6 +326,7 @@ namespace Sifravimas_V4._1
         private System.Windows.Forms.Label SearchResultLabel;
         private System.Windows.Forms.Label RevealPasswordLabel;
         private System.Windows.Forms.Button RevealPasswordButton;
+        private System.Windows.Forms.Button RandomPasswordButton;
     }
 }
 

@@ -209,21 +209,45 @@ namespace Sifravimas_V4._1
         }
         private void SaveButton_Click(object sender, EventArgs e)
         {
+            int found = 0;
             string Name = NameTextBox.Text;
             string Password = PasswordTextBox.Text;
             string URL = URLTextBox.Text;
             string Comment = CommentTextBox.Text;
             string PasswordEncrypted;
+            if (new FileInfo(path + "passwords.txt").Length != 0)
+            {
+                int counter = 0;
+                string line;
 
-            byte[] KeyAES = Encoding.UTF8.GetBytes("testtesttesttest");
-            string encrypted = SifruojamTekstaIBaitus_ECB(Password, KeyAES);
-            string Final = Name + "<>" + encrypted + "<>" + URL + "<>" + Comment + "\n";
-            File.AppendAllText(path + "passwords.txt", Final);          
-            FillListViewFromFile();
-            NameTextBox.Text = "";
-            PasswordTextBox.Text = "";
-            URLTextBox.Text = "";
-            CommentTextBox.Text = "";
+                // Read the file and display it line by line.  
+                using System.IO.StreamReader file =
+                    new System.IO.StreamReader(path + "passwords.txt");
+                while ((line = file.ReadLine()) != null)
+                {
+                    string[] tempList = line.Split("<>");
+                    string tempName = tempList[0];
+                    if (Name == tempName)
+                    {
+                        MessageBox.Show("This name is taken, enter a new one.");
+                        found++;
+                    }    
+                    counter++;
+                }
+            }
+            if(found == 0)
+            {
+                byte[] KeyAES = Encoding.UTF8.GetBytes("testtesttesttest");
+                string encrypted = SifruojamTekstaIBaitus_ECB(Password, KeyAES);
+                string Final = Name + "<>" + encrypted + "<>" + URL + "<>" + Comment + "\n";
+                File.AppendAllText(path + "passwords.txt", Final);
+                FillListViewFromFile();
+                NameTextBox.Text = "";
+                PasswordTextBox.Text = "";
+                URLTextBox.Text = "";
+                CommentTextBox.Text = "";
+            }
+
         }
         private string SifruojamTekstaIBaitus_ECB(string text, byte[] key)
         {
@@ -318,6 +342,16 @@ namespace Sifravimas_V4._1
         {
             byte[] KeyAES = Encoding.UTF8.GetBytes("testtesttesttest");
             RevealPasswordLabel.Text = DesifruojamBaitusITeksta_ECB(globalPassword, KeyAES);
+        }
+
+        private void RandomPasswordButton_Click(object sender, EventArgs e)
+        {
+            Guid g = Guid.NewGuid();
+            string GuidString = Convert.ToBase64String(g.ToByteArray());
+            GuidString = GuidString.Replace("=", "");
+            GuidString = GuidString.Replace("+", "");
+            GuidString = GuidString.Replace("/", "");
+            PasswordTextBox.Text = GuidString;
         }
     }
 }
