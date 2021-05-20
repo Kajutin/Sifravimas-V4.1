@@ -14,33 +14,45 @@ namespace Sifravimas_V4._1
 {
     public partial class Form1 : Form
     {
+
         string path = "C:\\Users\\kajus\\Desktop\\testSaugumas\\";
         string globalName;
         string globalPassword;
         string globalLine;
+        bool shouldIRun = false;
         public Form1()
         {
             InitializeComponent();
-            if (File.Exists(path + "passwords.txt.aes"))
+            var login = new Login();
+            if(login.ShowDialog() == DialogResult.OK)
             {
-                FileDecrypt(path + "passwords.txt.aes", "test");
-                File.Delete(path + "passwords.txt.aes");    
+                shouldIRun = true;
+                
+
+                if (File.Exists(path + "passwords.txt.aes"))
+                {
+                    FileDecrypt(path + "passwords.txt.aes", "test");
+                    File.Delete(path + "passwords.txt.aes");    
+                }
+                else if (File.Exists(path + "passwords.txt"))
+                {
+                    //woops
+                }
+                else
+                { 
+                    File.Create(path + "passwords.txt").Close();
+                }
+                FillListViewFromFile();
             }
-            else if (File.Exists(path + "passwords.txt"))
-            {
-                //woops
-            }
-            else
-            { 
-                File.Create(path + "passwords.txt").Close();
-            }
-            FillListViewFromFile();
         }
         protected override void OnFormClosing(FormClosingEventArgs e)
-        {
-            FileEncrypt(path + "passwords.txt", "test");
-            File.Delete(path + "passwords.txt");
-            base.OnFormClosing(e);
+        { 
+            if(shouldIRun == true)
+            {
+                FileEncrypt(path + "passwords.txt", "test");
+                File.Delete(path + "passwords.txt");
+                base.OnFormClosing(e);
+            }    
         }
         private void FileEncrypt(string inputFile, string password)
         {
@@ -200,7 +212,7 @@ namespace Sifravimas_V4._1
                     string comment = tempList[3];
                     string passwordOutput;
                     byte[] KeyAES = Encoding.UTF8.GetBytes("testtesttesttest");
-                    passwordOutput = DesifruojamBaitusITeksta_ECB(password, KeyAES);
+                    passwordOutput = Decode(password, KeyAES);
                     PasswordsListView.Items.Add(name + " // " + passwordOutput + " // " + url + " // " + comment);
                     counter++;
                 }
@@ -238,7 +250,7 @@ namespace Sifravimas_V4._1
             if(found == 0)
             {
                 byte[] KeyAES = Encoding.UTF8.GetBytes("testtesttesttest");
-                string encrypted = SifruojamTekstaIBaitus_ECB(Password, KeyAES);
+                string encrypted = Encode(Password, KeyAES);
                 string Final = Name + "<>" + encrypted + "<>" + URL + "<>" + Comment + "\n";
                 File.AppendAllText(path + "passwords.txt", Final);
                 FillListViewFromFile();
@@ -249,10 +261,10 @@ namespace Sifravimas_V4._1
             }
 
         }
-        private string SifruojamTekstaIBaitus_ECB(string text, byte[] key)
+        private string Encode(string text, byte[] key)
         {
             // Nesifruotas tekstaspaverciamas i baitus
-            byte[] tekstas = Encoding.UTF8.GetBytes(text);
+            byte[] Text = Encoding.UTF8.GetBytes(text);
             RijndaelManaged aes = new RijndaelManaged();
             // Modas ecb
             aes.Mode = CipherMode.ECB;
@@ -260,35 +272,28 @@ namespace Sifravimas_V4._1
             aes.KeySize = 128;
 
             // Sukuria sifratoriu
-            using (ICryptoTransform sifratorius = aes.CreateEncryptor(key, null))
+            using (ICryptoTransform encryptor = aes.CreateEncryptor(key, null))
             {
                 // Sifruojam teksta
-                byte[] sifruotasTekstas = sifratorius.TransformFinalBlock(tekstas, 0, tekstas.Length);
+                byte[] encryptedText = encryptor.TransformFinalBlock(Text, 0, Text.Length);
                 // Nutraukiam darba
-                sifratorius.Dispose();
+                encryptor.Dispose();
                 // Grazinam sifruota teksta string formatu
-                return Convert.ToBase64String(sifruotasTekstas);
+                return Convert.ToBase64String(encryptedText);
             }
         }
-        private string DesifruojamBaitusITeksta_ECB(string text, byte[] key)
+        private string Decode(string text, byte[] key)
         {
-            // Konvertuoja teksta i baitus
-            byte[] sifruotasTekstas = Convert.FromBase64String(text);
+            byte[] encodedText = Convert.FromBase64String(text);
             RijndaelManaged aes = new RijndaelManaged();
-            // Nustatom rakto dydi
             aes.KeySize = 128;
             aes.Padding = PaddingMode.PKCS7;
-            // Nuastatom moda i ecb
             aes.Mode = CipherMode.ECB;
-
-            // Sukuria desifratoriu
-            using (ICryptoTransform desifratorius = aes.CreateDecryptor(key, null))
+            using (ICryptoTransform decryptor = aes.CreateDecryptor(key, null))
             {
-                byte[] desifruotasTekstas = desifratorius.TransformFinalBlock(sifruotasTekstas, 0, sifruotasTekstas.Length);
-                // Nutraukia desifravimo darba
-                desifratorius.Dispose();
-                // Grazinam Desifruota teksta string formatu
-                return Encoding.UTF8.GetString(desifruotasTekstas);
+                byte[] originalText = decryptor.TransformFinalBlock(encodedText, 0, encodedText.Length);
+                decryptor.Dispose();
+                return Encoding.UTF8.GetString(originalText);
             }
         }
 
@@ -326,7 +331,7 @@ namespace Sifravimas_V4._1
         private void ChangePasswordButton_Click(object sender, EventArgs e)
         {
             byte[] KeyAES = Encoding.UTF8.GetBytes("testtesttesttest");
-            string newPasswordEncoded = SifruojamTekstaIBaitus_ECB(ChangePasswordTextBox.Text,KeyAES);
+            string newPasswordEncoded = Encode(ChangePasswordTextBox.Text,KeyAES);
             File.WriteAllText(path + "passwords.txt", File.ReadAllText(path + "passwords.txt").Replace(globalPassword,newPasswordEncoded));
             FillListViewFromFile();
         }
@@ -341,7 +346,7 @@ namespace Sifravimas_V4._1
         private void RevealPasswordButton_Click(object sender, EventArgs e)
         {
             byte[] KeyAES = Encoding.UTF8.GetBytes("testtesttesttest");
-            RevealPasswordLabel.Text = DesifruojamBaitusITeksta_ECB(globalPassword, KeyAES);
+            RevealPasswordLabel.Text = Decode(globalPassword, KeyAES);
         }
 
         private void RandomPasswordButton_Click(object sender, EventArgs e)
