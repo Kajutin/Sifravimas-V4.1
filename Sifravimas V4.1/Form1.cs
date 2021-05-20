@@ -15,6 +15,9 @@ namespace Sifravimas_V4._1
     public partial class Form1 : Form
     {
         string path = "C:\\Users\\kajus\\Desktop\\testSaugumas\\";
+        string globalName;
+        string globalPassword;
+        string globalLine;
         public Form1()
         {
             InitializeComponent();
@@ -23,10 +26,15 @@ namespace Sifravimas_V4._1
                 FileDecrypt(path + "passwords.txt.aes", "test");
                 File.Delete(path + "passwords.txt.aes");    
             }
-            else
+            else if (File.Exists(path + "passwords.txt"))
             {
+                //woops
+            }
+            else
+            { 
                 File.Create(path + "passwords.txt").Close();
             }
+            FillListViewFromFile();
         }
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
@@ -175,25 +183,29 @@ namespace Sifravimas_V4._1
         public void FillListViewFromFile()
         {
             PasswordsListView.Clear();
-            int counter = 0;
-            string line;
-
-            // Read the file and display it line by line.  
-            using System.IO.StreamReader file =
-                new System.IO.StreamReader(path + "passwords.txt");
-            while ((line = file.ReadLine()) != null)
+            if (new FileInfo(path + "passwords.txt").Length != 0)
             {
-                string[] tempList = line.Split("<>");
-                string name = tempList[0];
-                string password = tempList[1];
-                string url = tempList[2];
-                string comment = tempList[3];
-                string passwordOutput;
-                byte[] KeyAES = Encoding.UTF8.GetBytes("testtesttesttest");
-                passwordOutput = DesifruojamBaitusITeksta_ECB(password, KeyAES);
-                PasswordsListView.Items.Add(name + " // " + passwordOutput + " // " + url + " // " + comment);
-                counter++;
+                int counter = 0;
+                string line;
+
+                // Read the file and display it line by line.  
+                using System.IO.StreamReader file =
+                    new System.IO.StreamReader(path + "passwords.txt");
+                while ((line = file.ReadLine()) != null)
+                {
+                    string[] tempList = line.Split("<>");
+                    string name = tempList[0];
+                    string password = tempList[1];
+                    string url = tempList[2];
+                    string comment = tempList[3];
+                    string passwordOutput;
+                    byte[] KeyAES = Encoding.UTF8.GetBytes("testtesttesttest");
+                    passwordOutput = DesifruojamBaitusITeksta_ECB(password, KeyAES);
+                    PasswordsListView.Items.Add(name + " // " + passwordOutput + " // " + url + " // " + comment);
+                    counter++;
+                }
             }
+            
         }
         private void SaveButton_Click(object sender, EventArgs e)
         {
@@ -275,17 +287,37 @@ namespace Sifravimas_V4._1
             while ((line = file.ReadLine()) != null)
             {
                 string[] tempList = line.Split("<>");
-                string name = tempList[0];
-                string password = tempList[1];
+                globalName = tempList[0];
+                globalPassword = tempList[1];
+                globalLine = line;
                 string url = tempList[2];
                 string comment = tempList[3];
-                string passwordOutput;
-                if(SearchTextBox.Text == name)
+                if(SearchTextBox.Text == globalName)
                 {
                     SearchResultLabel.Text = line;
                 }
                 counter++;
             }
+        }
+        private void ChangePasswordButton_Click(object sender, EventArgs e)
+        {
+            byte[] KeyAES = Encoding.UTF8.GetBytes("testtesttesttest");
+            string newPasswordEncoded = SifruojamTekstaIBaitus_ECB(ChangePasswordTextBox.Text,KeyAES);
+            File.WriteAllText(path + "passwords.txt", File.ReadAllText(path + "passwords.txt").Replace(globalPassword,newPasswordEncoded));
+            FillListViewFromFile();
+        }
+
+        private void DeleteButton_Click(object sender, EventArgs e)
+        {
+            File.WriteAllText(path + "passwords.txt", File.ReadAllText(path + "passwords.txt").Replace(globalLine + "\n", ""));
+            FillListViewFromFile();
+            SearchResultLabel.Text = "Password was deleted.";
+        }
+
+        private void RevealPasswordButton_Click(object sender, EventArgs e)
+        {
+            byte[] KeyAES = Encoding.UTF8.GetBytes("testtesttesttest");
+            RevealPasswordLabel.Text = DesifruojamBaitusITeksta_ECB(globalPassword, KeyAES);
         }
     }
 }

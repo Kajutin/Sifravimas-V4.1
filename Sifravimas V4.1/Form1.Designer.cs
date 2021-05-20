@@ -50,6 +50,8 @@ namespace Sifravimas_V4._1
             this.textBox2 = new System.Windows.Forms.TextBox();
             this.label7 = new System.Windows.Forms.Label();
             this.SearchResultLabel = new System.Windows.Forms.Label();
+            this.RevealPasswordLabel = new System.Windows.Forms.Label();
+            this.RevealPasswordButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // PasswordsListView
@@ -178,6 +180,7 @@ namespace Sifravimas_V4._1
             this.ChangePasswordButton.TabIndex = 14;
             this.ChangePasswordButton.Text = "Change found password";
             this.ChangePasswordButton.UseVisualStyleBackColor = true;
+            this.ChangePasswordButton.Click += new System.EventHandler(this.ChangePasswordButton_Click);
             // 
             // label5
             // 
@@ -196,6 +199,7 @@ namespace Sifravimas_V4._1
             this.DeleteButton.TabIndex = 16;
             this.DeleteButton.Text = "Delete found password";
             this.DeleteButton.UseVisualStyleBackColor = true;
+            this.DeleteButton.Click += new System.EventHandler(this.DeleteButton_Click);
             // 
             // label6
             // 
@@ -231,11 +235,32 @@ namespace Sifravimas_V4._1
             this.SearchResultLabel.TabIndex = 19;
             this.SearchResultLabel.Text = "[results go here]";
             // 
+            // RevealPasswordLabel
+            // 
+            this.RevealPasswordLabel.AutoSize = true;
+            this.RevealPasswordLabel.Location = new System.Drawing.Point(274, 349);
+            this.RevealPasswordLabel.Name = "RevealPasswordLabel";
+            this.RevealPasswordLabel.Size = new System.Drawing.Size(119, 15);
+            this.RevealPasswordLabel.TabIndex = 20;
+            this.RevealPasswordLabel.Text = "[password goes here]";
+            // 
+            // RevealPasswordButton
+            // 
+            this.RevealPasswordButton.Location = new System.Drawing.Point(274, 323);
+            this.RevealPasswordButton.Name = "RevealPasswordButton";
+            this.RevealPasswordButton.Size = new System.Drawing.Size(109, 23);
+            this.RevealPasswordButton.TabIndex = 21;
+            this.RevealPasswordButton.Text = "Reveal password";
+            this.RevealPasswordButton.UseVisualStyleBackColor = true;
+            this.RevealPasswordButton.Click += new System.EventHandler(this.RevealPasswordButton_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(802, 411);
+            this.Controls.Add(this.RevealPasswordButton);
+            this.Controls.Add(this.RevealPasswordLabel);
             this.Controls.Add(this.SearchResultLabel);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.label6);
@@ -287,6 +312,8 @@ namespace Sifravimas_V4._1
         private System.Windows.Forms.TextBox textBox2;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label SearchResultLabel;
+        private System.Windows.Forms.Label RevealPasswordLabel;
+        private System.Windows.Forms.Button RevealPasswordButton;
     }
 }
 
